@@ -1,0 +1,51 @@
+SELECT *
+FROM online_retail_data
+
+--How many unique products has each customer purchased?
+SELECT customerid, COUNT(DISTINCT stockcode) AS unique_products
+FROM  online_retail_data
+GROUP BY customerid
+ORDER BY 2 DESC;
+
+--Which customers have only made a single purchase from the company?
+SELECT customerid
+FROM online_retail_data
+GROUP BY customerid
+HAVING COUNT(*) = 1;
+
+--Which products are most commonly purchased together by customers in the dataset?
+SELECT t1.stockcode AS product, t2.stockcode AS bought_with, 
+		COUNT(*) AS times_bought_together
+FROM online_retail_data AS t1
+JOIN online_retail_data AS t2 
+ON t1.customerid = t2.customerid AND t1.StockCode != t2.StockCode
+GROUP BY t1.StockCode, t2.StockCode
+ORDER BY times_bought_together DESC;
+
+
+--What is the total cost of goods purchased by customerid 17850?
+SELECT customerid, 
+		SUM(total_cost) OVER(PARTITION BY customerid ORDER BY total_cost)
+FROM (
+SELECT customerid, quantity * Unitprice AS Total_cost
+FROM online_retail_data) sub
+WHERE CustomerID = 17850
+GROUP BY customerid, Total_cost
+
+-- TOP 5 countries with the highest total purchased
+SELECT TOP 5 country, SUM(quantity * unitprice) AS Total_purchased
+FROM online_retail_data
+GROUP BY country
+ORDER BY Total_purchased DESC
+
+-- TOP 5 customer with the highest number of purchased
+SELECT TOP 5 CustomerID, COUNT(*) AS Total_no_of_purchased
+FROM online_retail_data
+GROUP BY CustomerID
+ORDER BY Total_no_of_purchased DESC
+
+-- Product with the highest quantity purchased
+SELECT TOP 1 Stockcode, MAX(Quantity) AS highest_quantity
+FROM online_retail_data
+GROUP BY  Stockcode
+ORDER BY highest_quantity DESC
